@@ -1,8 +1,8 @@
 class Factory
   class Proxy #:nodoc:
     class Build < Proxy #:nodoc:
-      def initialize(klass)
-        @instance = klass.new
+      def initialize(klass, args = [])
+        @instance = klass.new(*args)
       end
 
       def get(attribute)

@@ -104,6 +104,27 @@ describe Factory do
       end
     end
 
+    describe "adding contructor arguments" do
+      before do
+        @proxy = "proxy"
+        stub(@proxy).result { 'result' }
+      end
+            
+      it "should execute the block when running the factory" do
+        @args = {:message => 'The price is wrong, Bob!'}
+        @factory.constructor_args { @args }
+        mock(Factory::Proxy::Build).new(@factory.build_class, [@args]) { @proxy }
+        @factory.run(Factory::Proxy::Build, {})
+      end
+      
+      it "should pass the overrides to the block if the block arity is one" do
+        @factory.constructor_args {|overrides| {:message => overrides.delete(:message)} }
+        mock(Factory::Proxy::Build).new(@factory.build_class, [{:message => 'The price is wrong, Bob!'}]) { @proxy }
+        @factory.run(Factory::Proxy::Build, {:message => 'The price is wrong, Bob!'})
+      end
+      
+    end
+
     describe "adding a callback" do
       it "should add a callback attribute when the after_build attribute is defined" do
         mock(Factory::Attribute::Callback).new(:after_build, is_a(Proc)) { 'after_build callback' }
@@ -152,7 +173,7 @@ describe Factory do
       end
 
       it "should create the right proxy using the build class when running" do
-        mock(Factory::Proxy::Build).new(@factory.build_class) { @proxy }
+        mock(Factory::Proxy::Build).new(@factory.build_class, []) { @proxy }
         @factory.run(Factory::Proxy::Build, {})
       end
 
@@ -165,6 +186,7 @@ describe Factory do
         mock(@proxy).result() { 'result' }
         @factory.run(Factory::Proxy::Build, {}).should == 'result'
       end
+      
     end
 
     it "should add an association without a factory name or overrides" do

@@ -195,6 +195,28 @@ class Factory
     add_attribute(name) { s.next }
   end
   
+  # Allows you to run a block before each factory build invocation. The results 
+  # of the block will be passed to the constructor of the build class. This is
+  # required when you have overriden initialize in your class. It can also be
+  # useful for preinitializing dependencies.
+  #
+  # You can use this to initialize params just as you would any other argument:
+  #   Factory.define :user do |f|
+  #    f.constructor_args { {:email => 'person@example.com'} }
+  #   end
+  # 
+  # The block can also accept an overrides parameter, this will pass any 
+  # overrides sent to the Factory call:
+  #   Factory.define :user do |f|
+  #    f.constructor_args {|overrides| {:email => overrides.delete(:email) || 'person@example.com'} }
+  #   end  
+  #
+  #   user = Factory(:user, :email => 'nobody@example.com')
+  #   user.email #=> 'nobody@example.com'
+  def constructor_args(&block)
+    @constructor_args = block
+  end
+  
   def after_build(&block)
     callback(:after_build, &block)
   end
@@ -311,7 +333,7 @@ class Factory
   end
 
   def run (proxy_class, overrides) #:nodoc:
-    proxy = proxy_class.new(build_class)
+    proxy = proxy_class.new(build_class, proxy_class_constructor_args(overrides))
     overrides = symbolize_keys(overrides)
     overrides.each {|attr, val| proxy.set(attr, val) }
     passed_keys = overrides.keys.collect {|k| Factory.aliases_for(k) }.flatten
@@ -398,5 +420,11 @@ class Factory
       options
     end
   end
+
+  def proxy_class_constructor_args(overrides)
+    return [] unless @constructor_args
+    @constructor_args.arity.zero? ? [@constructor_args.call].flatten : [@constructor_args.call(overrides)].flatten
+  end
+  
 
 end

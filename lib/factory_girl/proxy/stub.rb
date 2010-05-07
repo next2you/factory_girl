@@ -3,8 +3,8 @@ class Factory
     class Stub < Proxy #:nodoc:
       @@next_id = 1000
 
-      def initialize(klass)
-        @instance = klass.new
+      def initialize(klass, args = [])
+        @instance = klass.new(*args)
         @instance.id = next_id
         @instance.instance_eval do
           def new_record?

@@ -4,7 +4,7 @@ class Factory
 
     attr_reader :callbacks
 
-    def initialize(klass)
+    def initialize(klass, args=[])
     end
 
     def get(attribute)
