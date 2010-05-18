@@ -87,6 +87,7 @@ class Factory
         @attributes << attribute.clone
       end
     end
+    @constructor_args = parent.read_constructor_args
   end
 
   # Adds an attribute that should be assigned on generated instances for this
@@ -215,6 +216,10 @@ class Factory
   #   user.email #=> 'nobody@example.com'
   def constructor_args(&block)
     @constructor_args = block
+  end
+  
+  def read_constructor_args
+    @constructor_args
   end
   
   def after_build(&block)
